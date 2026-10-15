@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Default local benchmark output; reference results live in benchmarks/default.
+benchmark-results/

@@ -1,0 +1,67 @@
+{
+  "training_workload": "mixed",
+  "training_episodes": 1000,
+  "training_seeds": [
+    42,
+    2042,
+    4042
+  ],
+  "learning_config": {
+    "learning_rate": 0.1,
+    "gamma": 1.0,
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay": 0.995
+  },
+  "workload_config": {
+    "num_jobs": 60,
+    "arrival_rate": 0.28,
+    "deadline_factor": 4.0,
+    "duration_range": [
+      1,
+      6
+    ],
+    "burst_size": 6,
+    "burst_window": 3
+  },
+  "evaluation_workloads": [
+    "stable",
+    "bursty",
+    "mixed"
+  ],
+  "evaluation_seeds": [
+    20000,
+    20001,
+    20002,
+    20003,
+    20004,
+    20005,
+    20006,
+    20007,
+    20008,
+    20009,
+    20010,
+    20011,
+    20012,
+    20013,
+    20014,
+    20015,
+    20016,
+    20017,
+    20018,
+    20019,
+    20020,
+    20021,
+    20022,
+    20023,
+    20024,
+    20025,
+    20026,
+    20027,
+    20028,
+    20029
+  ],
+  "random_policy_seed": "evaluation_seed",
+  "aggregation": "mean of episode metrics; sample standard deviation of episode cost",
+  "python_version": "3.12.14"
+}
