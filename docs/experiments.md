@@ -39,6 +39,7 @@ Python 3.12.14 and Matplotlib 3.11.2.
 - `summary.csv`: 24 rows, one per workload/policy/training run. Metrics are
   arithmetic means of the 30 **episode metrics**. In particular, mean P95 waiting
   time averages episode percentiles; it is not a percentile over pooled jobs.
+  The standalone `evaluate` command pools jobs across episodes instead.
   `std_primary_cost` is the sample standard deviation over evaluation episodes,
   not training variability or a confidence interval.
 - `mean_cost_delta_vs_*` is mean paired `J(policy) - J(baseline)` using matching

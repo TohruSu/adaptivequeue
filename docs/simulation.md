@@ -96,7 +96,7 @@ same engine. Only the engine holds future arrivals. `qlearning.step_action`
 accepts an action index and returns the completed job, reward, next encoded state,
 and `done`. Terminal states are represented by `None`, including empty episodes.
 
-The state tuple has 96 possible values: three zero-based bucket indices and a
+The state tuple has up to 96 bucket combinations: three zero-based indices and a
 boolean, computed only from currently waiting jobs and the current time:
 
 | Feature | Buckets in order |
