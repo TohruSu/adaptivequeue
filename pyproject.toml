@@ -13,6 +13,7 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.9", "mypy>=1.14"]
+benchmark = ["matplotlib>=3.8"]
 
 [project.scripts]
 adaptivequeue = "adaptivequeue.cli:main"

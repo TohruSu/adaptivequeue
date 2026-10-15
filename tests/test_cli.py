@@ -2,6 +2,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from adaptivequeue.cli import main
+
 
 def test_module_cli_displays_metrics() -> None:
     result = subprocess.run(
@@ -93,3 +97,21 @@ def test_cli_training_and_evaluation(tmp_path: Path) -> None:
     assert "Policy: qlearning | Episodes: 2" in evaluation.stdout
     assert "Primary cost J" in evaluation.stdout
     assert "95th-percentile waiting time" in evaluation.stdout
+
+
+def test_benchmark_cli_dispatch_preserves_output_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from adaptivequeue import benchmark
+
+    called = []
+
+    def run(output_dir: Path, *, retrain: bool) -> list:
+        called.append((output_dir, retrain))
+        return []
+
+    monkeypatch.setattr(benchmark, "run_benchmark", run)
+    monkeypatch.setattr(sys, "argv", ["adaptivequeue", "benchmark", "--output-dir", str(tmp_path)])
+    main()
+    assert called == [(tmp_path, False)]
+    assert "per-episode results" in capsys.readouterr().out

@@ -54,9 +54,22 @@ def main() -> None:
     _add_workload_arguments(evaluation, workload="mixed", seed=None)
     evaluation.add_argument("--episodes", type=int, default=20)
     evaluation.add_argument("--model", type=Path, required=True)
+
+    benchmark = commands.add_parser("benchmark", help="Run the reproducible paired benchmark")
+    benchmark.add_argument("--output-dir", type=Path, default=Path("benchmark-results"))
+    benchmark.add_argument("--retrain", action="store_true", help="Replace cached benchmark models")
     args = parser.parse_args()
 
     try:
+        if args.command == "benchmark":
+            from adaptivequeue.benchmark import run_benchmark
+
+            results = run_benchmark(args.output_dir, retrain=args.retrain)
+            print(
+                f"Saved {len(results)} per-episode results, "
+                f"summaries, and figures to {args.output_dir}"
+            )
+            return
         config = WorkloadConfig(
             num_jobs=args.jobs,
             arrival_rate=args.arrival_rate,

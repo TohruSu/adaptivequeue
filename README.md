@@ -4,12 +4,13 @@ A lightweight Python project for experimenting with adaptive background job
 scheduling. Includes a discrete-time, single-worker simulator, FIFO, SPT, EDF,
 Priority, and seeded Random baselines, and a tabular Q-Learning meta-scheduler.
 
-Requires Python 3.10 or newer. There are no runtime dependencies.
+Requires Python 3.10 or newer. Simulation and learning have no runtime
+dependencies; benchmark figures use the optional Matplotlib extra.
 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[dev]'
+python -m pip install -e '.[dev,benchmark]'
 ```
 
 Run an episode with 60 jobs:
@@ -35,6 +36,17 @@ Evaluation defaults to seeds following the saved training range, with exploratio
 disabled. Use `--seed` to choose a different disjoint range. Both commands accept
 the workload options below; `train --help` lists learning and exploration settings.
 
+Run the fixed paired benchmark (three independently trained models and all five
+baselines, across three workloads and 30 evaluation seeds):
+
+```sh
+adaptivequeue benchmark --output-dir benchmark-results
+```
+
+Models are cached in the output directory; `--retrain` regenerates them.
+See [experimental results and reproduction details](docs/experiments.md) for
+the observed comparisons and CSV definitions.
+
 ```sh
 python -m adaptivequeue --workload bursty --policy spt --seed 7 \
   --jobs 60 --arrival-rate 0.3 --deadline-factor 3
@@ -46,5 +58,5 @@ mypy
 
 See [simulation rules and parameters](docs/simulation.md) or run
 `adaptivequeue --help`. The Python API also exposes per-job execution records.
-The current scope is simulation, classical baselines, and CPU-only tabular
-Q-Learning; no additional runtime dependencies are needed.
+The current scope is simulation, classical baselines, CPU-only tabular
+Q-Learning, and reproducible benchmarking.
