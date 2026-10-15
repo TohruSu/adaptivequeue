@@ -221,3 +221,6 @@ __marimo__/
 
 # Default local benchmark output; reference results live in benchmarks/default.
 benchmark-results/
+
+# Model produced by the README training example.
+/policy.json

@@ -2,6 +2,9 @@ name: Checks
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +21,10 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
+      - name: Build and smoke-test wheel
+        run: |
+          python -m pip wheel --no-deps --wheel-dir dist .
+          python -m pip install --force-reinstall --no-deps dist/*.whl
+          cd /tmp
+          adaptivequeue --workload mixed --policy edf --seed 42
+          python -m adaptivequeue --help
