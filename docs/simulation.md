@@ -86,3 +86,61 @@ episode. Cost is averaged over jobs, without normalizing by total priority weigh
 Compare policies on identical generated jobs and settings. Seeds control both
 workloads and Random decisions independently; several episode seeds give a more
 useful comparison than a single run.
+
+## Tabular Q-Learning meta-scheduler
+
+`Simulation(jobs)` exposes `waiting_jobs`, `current_time`, and `done` at each
+decision. Its `step(policy)` executes exactly one job, returns its `JobResult`,
+and advances to the next ready queue (or termination). `simulate()` uses this
+same engine. Only the engine holds future arrivals. `qlearning.step_action`
+accepts an action index and returns the completed job, reward, next encoded state,
+and `done`. Terminal states are represented by `None`, including empty episodes.
+
+The state tuple has 96 possible values: three zero-based bucket indices and a
+boolean, computed only from currently waiting jobs and the current time:
+
+| Feature | Buckets in order |
+| --- | --- |
+| Queue length | 1; 2–3; 4–7; 8+ |
+| Minimum slack | overdue: <0; urgent: 0–2; moderate: 3–6; relaxed: 7+ |
+| Short-job proportion | low: <1/3; medium: 1/3 to <2/3; high: >=2/3 |
+| High-priority job waiting | true if any weight is >=4, otherwise false |
+
+A short job has duration <=2. Each job's slack is
+`deadline - current_time - duration`: its remaining deadline budget after allowing
+for processing. Waiting jobs have not started, so their remaining processing time
+is their full duration. Negative slack means even immediate execution would miss
+the deadline; it does not require the absolute deadline to have passed.
+
+Actions 0, 1, 2, and 3 invoke FIFO, SPT, EDF, and Priority respectively, preserving
+their tie-breaking rules. The chosen baseline selects the next job. Reward is
+`-priority_weight * (tardiness + 0.1 * flow_time)` for that completed job. The
+episode return is `-n * J`; for a fixed job count, maximizing undiscounted return
+minimizes the existing primary cost.
+
+The update is `Q(s,a) += alpha * (reward + gamma * max_a' Q(s',a') - Q(s,a))`,
+omitting the bootstrap term for terminal transitions. Defaults are alpha=0.1,
+gamma=1.0, and epsilon-greedy exploration with
+`epsilon(episode) = max(0.05, 1.0 * 0.995**episode)` (episode numbering starts at
+zero). Discounting, when configured, applies per scheduled job, not per time unit.
+Q-values start at zero. Greedy ties choose the lowest action index, so unseen
+states fall back to FIFO. Exploration chooses uniformly among all four actions.
+
+`qlearning.train()` generates workload seeds `seed` through `seed + episodes - 1`;
+action selection uses a separate local RNG. RL seeds must be nonnegative.
+`evaluate()` disables exploration and all Q-table updates, including insertion of
+unseen states. It defaults to the next workload seed after training and rejects
+overlapping training/evaluation seed ranges. All five metrics are computed over
+pooled jobs from evaluation episodes; p95 is not an average of episode percentiles.
+For classical comparisons, run baselines on those same evaluation seeds and settings.
+
+`QLearningAgent.save()` writes readable, versioned JSON containing action order,
+state thresholds, reward definition, learning parameters, training workload and
+seed range, and Q-values. `load()` preserves greedy predictions and rejects
+incompatible formulations. The format supports evaluation, not exact continuation
+of an interrupted training RNG stream. A loaded agent's `policy` method also works
+with `simulate(jobs, agent.policy)`.
+
+The coarse state aliases different queues and omits future arrivals, so it is not
+a full Markov description. Training does not guarantee improvement over a baseline;
+evaluate on several held-out seeds and retrain when workload characteristics change.

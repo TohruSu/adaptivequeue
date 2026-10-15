@@ -43,3 +43,7 @@ class JobResult:
     @property
     def tardiness(self) -> int:
         return max(0, self.completion_time - self.job.deadline)
+
+    @property
+    def cost(self) -> float:
+        return self.job.priority_weight * (self.tardiness + 0.1 * self.flow_time)
