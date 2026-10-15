@@ -1,26 +1,26 @@
-"""Policies receive only the jobs currently waiting for the worker."""
+"""Policies receive the waiting jobs and current simulation time."""
 
 import random
 from typing import Callable, Sequence
 
 from adaptivequeue.models import Job
 
-Policy = Callable[[Sequence[Job]], Job]
+Policy = Callable[[Sequence[Job], int], Job]
 
 
-def fifo(waiting: Sequence[Job]) -> Job:
+def fifo(waiting: Sequence[Job], current_time: int) -> Job:
     return min(waiting, key=lambda job: (job.arrival_time, job.job_id))
 
 
-def spt(waiting: Sequence[Job]) -> Job:
+def spt(waiting: Sequence[Job], current_time: int) -> Job:
     return min(waiting, key=lambda job: (job.duration, job.arrival_time, job.job_id))
 
 
-def edf(waiting: Sequence[Job]) -> Job:
+def edf(waiting: Sequence[Job], current_time: int) -> Job:
     return min(waiting, key=lambda job: (job.deadline, job.arrival_time, job.job_id))
 
 
-def priority(waiting: Sequence[Job]) -> Job:
+def priority(waiting: Sequence[Job], current_time: int) -> Job:
     return min(waiting, key=lambda job: (-job.priority_weight, job.arrival_time, job.job_id))
 
 
@@ -32,7 +32,11 @@ def make_policy(name: str, *, seed: int) -> Policy:
     """Create a policy; recreate it with the same seed to replay a random run."""
     if name == "random":
         rng = random.Random(seed)
-        return rng.choice
+
+        def random_policy(waiting: Sequence[Job], current_time: int) -> Job:
+            return rng.choice(waiting)
+
+        return random_policy
     try:
         return POLICIES[name]
     except KeyError:

@@ -25,7 +25,7 @@ def test_job_times_and_metrics_match_hand_calculation() -> None:
 
 
 def test_empty_episode_has_zero_metrics_and_never_calls_policy() -> None:
-    def fail_if_called(waiting: object) -> Job:
+    def fail_if_called(waiting: object, current_time: int) -> Job:
         pytest.fail("an empty episode must not request a scheduling decision")
 
     result = simulate([], fail_if_called)

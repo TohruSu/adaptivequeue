@@ -10,8 +10,9 @@ can be reused across policies.
 
 One worker runs one job to completion without preemption. Whenever it is idle,
 all jobs with arrival time at or before the current time enter the waiting queue.
-The policy receives only an immutable snapshot of that queue and must select a
-waiting job. It cannot observe future arrivals. Jobs arriving during execution
+The engine calls `policy(waiting_jobs, current_time)` with an immutable snapshot
+of that queue and the current integer simulation time. The policy must select a
+waiting job and cannot observe future arrivals. Jobs arriving during execution
 wait until completion; arrivals exactly at completion participate in the next
 decision. The engine skips to completion or the next arrival rather than stepping
 through ticks where no scheduling decision is possible. It runs until every job
@@ -27,6 +28,7 @@ finishes, including late jobs, without deliberately idling when work is availabl
 | `priority` | Highest priority weight |
 | `random` | Uniformly random waiting job, using a local seeded RNG |
 
+These baselines accept `current_time` but do not use it in their selection rules.
 The first four break ties by earliest arrival, then lexicographically smallest
 job ID. Random's queue is populated in arrival/ID order, making seeded results
 independent of input ordering. Recreate a Random policy with the same seed for

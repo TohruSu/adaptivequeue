@@ -32,7 +32,7 @@ def simulate(jobs: Iterable[Job], policy: Policy) -> SimulationResult:
             waiting.append(arrivals[next_arrival])
             next_arrival += 1
 
-        selected = policy(tuple(waiting))
+        selected = policy(tuple(waiting), time)
         if selected not in waiting:
             raise ValueError("policy must select a job from the waiting queue")
         waiting.remove(selected)

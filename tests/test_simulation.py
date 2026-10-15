@@ -24,7 +24,7 @@ def test_arrivals_do_not_preempt_and_idle_time_is_skipped() -> None:
     assert all(r.completion_time - r.start_time == r.job.duration for r in result.jobs)
 
 
-def test_policy_sees_only_available_jobs_including_completion_boundary() -> None:
+def test_policy_sees_available_jobs_and_current_time_at_each_decision() -> None:
     jobs = [
         Job("running", 0, 5, 20, 1, "test"),
         Job("waiting", 1, 4, 20, 1, "test"),
@@ -33,13 +33,18 @@ def test_policy_sees_only_available_jobs_including_completion_boundary() -> None
     ]
     observations = []
 
-    def observe(waiting: Sequence[Job]) -> Job:
+    def observe(waiting: Sequence[Job], current_time: int) -> Job:
         assert isinstance(waiting, tuple)
-        observations.append(tuple(job.job_id for job in waiting))
-        return spt(waiting)
+        observations.append((current_time, tuple(job.job_id for job in waiting)))
+        return spt(waiting, current_time)
 
     result = simulate(jobs, observe)
-    assert observations == [("running",), ("waiting", "at-completion"), ("waiting",), ("future",)]
+    assert observations == [
+        (0, ("running",)),
+        (5, ("waiting", "at-completion")),
+        (6, ("waiting",)),
+        (30, ("future",)),
+    ]
     assert [r.start_time for r in result.jobs] == [0, 5, 6, 30]
 
 
@@ -52,7 +57,7 @@ def test_duplicate_ids_are_rejected() -> None:
 def test_policy_cannot_select_a_future_job() -> None:
     jobs = [Job("available", 0, 2, 10, 1, "test"), Job("future", 3, 1, 10, 1, "test")]
     with pytest.raises(ValueError, match="waiting queue"):
-        simulate(jobs, lambda waiting: jobs[1])
+        simulate(jobs, lambda waiting, current_time: jobs[1])
 
 
 @pytest.mark.parametrize(

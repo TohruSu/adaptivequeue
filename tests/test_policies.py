@@ -32,8 +32,8 @@ def test_ties_use_arrival_then_job_id(name: str) -> None:
         Job("z", 0, 2, 9, 2, "test"),
     ]
     policy = make_policy(name, seed=1)
-    assert policy(jobs).job_id == "z"
-    assert policy(jobs[:2]).job_id == "a"
+    assert policy(jobs, 1).job_id == "z"
+    assert policy(jobs[:2], 1).job_id == "a"
 
 
 def test_random_policy_replays_seeded_choices() -> None:
